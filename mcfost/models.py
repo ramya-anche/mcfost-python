@@ -9,7 +9,7 @@ import numpy as np
 import astropy.io.fits as fits
 import astropy.io.ascii as ascii
 import astropy.units as units
-import collections
+from collections.abc import Mapping
 import logging
 _log = logging.getLogger('mcfost')
 
@@ -17,9 +17,10 @@ _log = logging.getLogger('mcfost')
 from .paramfiles import Paramfile, find_paramfile
 
 from . import utils
+import collections
 
 
-class ModelImageCollection(collections.Mapping):
+class ModelImageCollection(collections.abc.Mapping):
 
     """ 
     Helper collection class to implement on-demand loading of
@@ -337,7 +338,7 @@ class ModelResults(MCFOST_Dataset):
         ax = utils.imshow_with_mouseover(ax, image,  norm=norm, cmap=cmap, extent=extent, origin='lower')
         ax.set_xlabel("Offset [{unit}]".format(unit=axes_units))
         ax.set_ylabel("Offset [{unit}]".format(unit=axes_units))
-        ax.set_title("Image for "+wavelength+" $\mu$m")
+        ax.set_title("Image for "+wavelength+" \u03BCm")
 
 
         if polarization==True:
@@ -730,7 +731,7 @@ class ModelSED(MCFOST_SED_Base):
                 # Scale colors from color_min to color_max
                 relative_pos = float(i)*(ninc+1)/ninc**2
                 mycolor = tuple( c_imin*(1-relative_pos) + c_imax*relative_pos)
-                label = '$i={inc:.1f}^\circ$'.format(inc=self.inclinations[i]) if np.mod(i,label_multiple) == 0 else None
+                label = '$i$={inc:.1f}\u00b0'.format(inc=self.inclinations[i]) if np.mod(i,label_multiple) == 0 else None
 
 
                 plt.loglog(self.wavelength.to(units.micron).value, self.nu_fnu[i].to(units.W/units.m**2).value,
@@ -738,14 +739,14 @@ class ModelSED(MCFOST_SED_Base):
         else:
             # Plot one inclination
             iclosest = np.abs(self.inclinations - float(inclination)).argmin()
-            label = '$i={inc:.1f}^\circ$'.format(inc=self.inclinations[iclosest])
+            label = '$i$={inc:.1f}\u00b0'.format(inc=self.inclinations[iclosest])
 
             plt.loglog(self.wavelength.to(units.micron).value, self.nu_fnu[iclosest].to(units.W/units.m**2).value,
                 label=label, linestyle=linestyle, marker=marker, color=color, alpha=alpha )
 
 
 
-        plt.xlabel("Wavelength ($\mu$m)")
+        plt.xlabel("Wavelength (\u03BCm)")
         plt.ylabel("$\\nu F_\\nu$ (W m$^{-2}$)")
         plt.title(title)
         ax = plt.gca()
@@ -821,7 +822,7 @@ class ObservedSED(MCFOST_SED_Base):
         # for some reason the errorbar function hangs if fed Quantities so extract the values first:
         plt.errorbar( self.wavelength.value, nu_fnu.value, yerr =nu_fnu_uncert.value, linestyle=linestyle, marker=marker, color=color, alpha=alpha)
 
-        plt.xlabel("Wavelength ($\mu$m)")
+        plt.xlabel("Wavelength (\u03BCm)")
         plt.ylabel("$\\nu F_\\nu$ (W m$^{-2}$)")
         plt.title(title)
         ax = plt.gca()
@@ -881,7 +882,7 @@ class ObservedImage(object):
  #       print "Filename for image: "+imagefilename
  #       raise NotImplementedError("Not implemented yet!")
 
-class OBSImageCollection(collections.Mapping):
+class OBSImageCollection(collections.abc.Mapping):
     """ Helper collectin class to implement on-demand loading of 
     image data via a dict interface. The dict looks like it
     always contains all available images, and can be indexed via
